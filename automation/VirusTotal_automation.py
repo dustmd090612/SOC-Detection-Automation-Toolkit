@@ -65,7 +65,7 @@ def extract_result(status: int, data: dict):
     return "UNKNOWN", malicious
 
 def main():
-    api_key = os.getenv("VT_API_KEY")
+    api_key = ("VT_API_KEY")
     if not api_key:
         print("❌ 환경변수 VT_API_KEY가 존재하지 않습니다. 설정을 확인해 주세요.")
         return
@@ -104,3 +104,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+input("\n창이 닫히지 않게 하려면 엔터 키를 누르세요...")
