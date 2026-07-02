@@ -1,0 +1,71 @@
+========================================================================
+# SOC Detection & Automation Toolkit - Custom Snort Rules
+# Target: Critical Infrastructure & Latest CVEs (Updated 2026)
+# ========================================================================
+
+# --- Apache log4j ---
+alert tcp any any -> any any (msg:"Apache log4j RCE - TCP Bypass"; flow:established,to_server; content:"%7bjndi%3a"; nocase; fast_pattern; pcre:"/(j|l|r|d|(\x24|%24)(\x7b|%7b)(lower|upper)(\x3a|%3a)(j|l|r|d)(n|m|(\x24|%24)(\x7b|%7b)(lower|upper)(\x3a|%3a)(d|n|m)(\x7d|%7d))(a|l|s|(\x24|%24)(\x7b|%7b)(lower|upper)(\x3a|%3a)(a|l|s)(\x7d|%7d))(p|(\x24|%24)(\x7b|%7b)(lower|upper)(\x3a|%3a)p(\x7d|%7d))/Ri");)
+alert tcp any any -> any any (msg:"Apache log4j RCE - AWS Access Key Disclosure"; flow:established,to_server; content:"|24 7b|"; pcre:"/^(j|\x24|\x7b(lower|upper)\x24\x7b\x3a\x3a\x7d)(n|\x24\x7b(lower|upper)\x3a\x7d(d|\x24\x7b(lower|upper)\x3a\x7d))/Ri"; content:"|3a|"; distance:0; content:"|24 7b|env|3a|AWS_ACCESS_KEY_ID"; distance:0;)
+
+# --- Samba & Services ---
+alert tcp any any -> any any (msg:"Samba rsync Buffer Overflow"; flow:established,to_server; flowbits:isset,ET.rsync.Sender; content:"|00 00 07|"; offset:1; depth:3; byte_test:4,>,16,9,relative,little;)
+alert tcp any any -> any any (msg:"Samba rsync Heap Buffer Overflow (CVE-2024-12084)"; flow:established,to_server; content:"|40|RSYNCD|3a|"; fast_pattern; content:"--server"; content:"--sender"; content:"|00 00 07|"; content:"|0e|"; distance:0; byte_test:1,&,0x80,0,relative; byte_test:4,>,16,9,relative,little; byte_test:4,<,65,9,relative,little;)
+alert tcp any any -> any any (msg:"Roundcube XSS"; flow:established,to_server; content:"|3c|animate|20|"; content:"attributename|3d 22|href|20 22|"; fast_pattern; nocase; distance:0; content:"values|3d 22|"; nocase; pcre:"/^([^\x22]*?)javascript\x3a/Ri");)
+
+# --- Web & Infrastructure Application ---
+alert tcp any any -> any any (msg:"BIG-IP - Command Execution via util"; flow:established,to_client; flowbits:isset,ET.BIGIP.Bash; content:"200"; content:"|22|command|22|"; content:"|22|utilCmdArgs|22|"; fast_pattern; classtype:successful-admin;)
+alert tcp any any -> any any (msg:"Redis RCE Attempt (CVE-2022-0543)"; flow:to_server,established; content:"package|2e|loadlib|28|"; fast_pattern; content:"|22|luaopen_"; within:200; classtype:attempted-admin;)
+alert tcp any any -> any any (msg:"Lazarus Scout RAT Command Execution"; flow:to_server,established; content:"hxloc=%08x%08x%08x"; nocase; fast_pattern; classtype:trojan-activity;)
+alert tcp any any -> any any (msg:"TeamCity Auth Bypass (CVE-2024-27198)"; flow:established,to_server; content:"GET /hax?jsp=";)
+alert tcp any any -> any any (msg:"CrushFTP VFS Sandbox Escape (CVE-2024-4040)"; flow:established,to_server; content:"/WebInterface/"; content:"currentAuth="; distance:0; content:"{"; distance:0;)
+alert tcp any any -> any any (msg:"Ivanti Connect Secure Command Injection (CVE-2024-21887)"; flow:established,to_server; content:"/api/v1/configuration/nodes/"; content:"python -c"; distance:0;)
+alert tcp any any -> any any (msg:"ownCloud graphapi Info Disclosure (CVE-2023-49103)"; flow:established,to_server; content:"GET /.well-known/openid-configuration/apps/graphapi/"; depth:80; content:" HTTP/1."; distance:0; fast_pattern;)
+alert tcp any any -> any any (msg:"Hikvision CCTV RCE (CVE-2023-6895)"; flow:established,to_server; content:"/php/ping.php"; http_uri; fast_pattern; content:"jsondata[ip]="; distance:0; within:40; classtype:web-application-attack;)
+alert tcp any any -> any any (msg:"Hikvision JNDI (CVE-2025-34067)"; flow:to_server,established; content:"/bic/ssoService/v1/applyCT"; fast_pattern; pcre:"/(ldap|rmi|dns):\/\//i");)
+
+# --- IoT & Dahua ---
+alert tcp any any -> any any (msg:"Dahua Loopback Authentication Bypass M1 (CVE-2021-33044)"; flow:established,to_server; content:"POST"; content:"/RPC2_Login"; fast_pattern; content:"|22|ipAddr|22|"; content:"|22|127.0.0.1|22|"; within:15; content:"|22|loginType|22 3a|"; content:"|22|Loopback|22|"; within:15; content:"|22|clientType|22 3a|"; content:"|22|Local|22|"; within:15;)
+alert tcp any any -> any any (msg:"Dahua Loopback Authentication Bypass M2 (CVE-2021-33045)"; flow:established,to_server; content:"|20 00 00 00|DHIP"; fast_pattern; content:"|22|ipAddr|22|"; content:"|22|127.0.0.1|22|"; within:15; content:"|22|loginType|22 3a|"; content:"|22|Loopback|22|"; within:15; content:"|22|clientType|22 3a|"; content:"|22|Local|22|"; within:15;)
+
+# --- Enterprise Vulnerabilities (Oracle, Confluence, Citrix) ---
+alert http any any -> any any (msg:"Oracle OIM RCE Vulnerability - JSON Runtime Exec Attempt (CVE-2026-21992)"; flow:to_server,established; content:"POST"; content:"/oim/rest/"; nocase; fast_pattern; content:"Content-Type|3a| application/json"; nocase; content:"java.lang.Runtime"; nocase; content:"getRuntime().exec("; nocase; sid:2035001; rev:1;)
+alert http any any -> any any (msg:"Oracle OIM RCE Vulnerability - Java Serialized Payload (CVE-2026-21992)"; flow:to_server,established; content:"POST"; content:"/oim/"; nocase; fast_pattern; content:"Content-Type|3a| application/x-java-serialized-object"; nocase; content:"|AC ED 00 05|"; sid:2035002; rev:1;)
+alert tcp any any -> any any (msg:"Confluence OGNL Injection Attempt (CVE-2023-22527)"; flow:to_server,established; content:"/template/aui/text-inline.vm"; content:"ognl"; nocase;)
+alert tcp any any -> any any (msg:"Citrix NetScaler RCE Attempt (CVE-2023-3519)"; flow:to_server,established; content:"/vpn/../vpns/"; nocase;)
+alert tcp any any -> any any (msg:"Langflow Unauthenticated RCE Attempt (CVE-2026-33017)"; flow:established,to_server; content:"POST"; content:"/api/v1/build_public_tmp/"; depth:25; content:"/flow"; distance:1; fast_pattern;)
+alert tcp any any -> any any (msg:"Citrix NetScaler Gateway Out-of-bounds Read (CVE-2026-3055)"; flow:established,to_server; content:"POST"; content:"/cgi/GetAuthMethods"; nocase;)
+alert tcp any any -> any any (msg:"Possible Oracle E-Business RCE Attempt 01 (CVE-2022-21587)"; flow:established,to_server; content:"POST"; content:"/OA_HTML/BneViewerXMLService"; fast_pattern; content:"bne:uueupload=TRUE";)
+alert tcp any any -> any any (msg:"Possible Oracle E-Business RCE Attempt 02 (CVE-2022-21587)"; flow:established,to_server; content:"POST"; content:"/OA_HTML/BneDownloadService"; fast_pattern; content:"bne:uueupload=TRUE";)
+
+# --- Supply Chain & Routers ---
+alert tcp any any -> any any (msg:"[Wins_Rule] Axios Supply Chain.2604"; flow:to_server; content:"/6202033"; offset:4; depth:20; fast_pattern; nocase; content:"Host: sfrclak.com"; distance:0; pcre:"/packages\.npm\.org\/product[123]/Ri"; sid:1000001;)
+alert tcp any any -> any any (msg:"D-link DCS getuser Information Disclosure"; flow:established,to_server; content:"/config/getuser"; nocase;)
+alert tcp any any -> any any (msg:"D-link DCS getuser Information Disclosure 02"; flow:to_server,established; content:"/cgi-bin/account_mgr.cgi"; nocase;)
+alert tcp any any -> any any (msg:"D-link DIR Authentication Bypass (CVE-2025-70231)"; flow:to_server,established; content:"/goform/getAuthCode"; nocase;)
+alert tcp any any -> any any (msg:"Open Redirect/XSS attempt (CVE-2026-22029)"; flow:to_server,established; content:"redirect="; nocase; pcre:"/redirect\s*=\s*(?:javascript|data)\s*:/Ui");)
+
+# --- Windows & SMB ---
+alert tcp any any -> any any (msg:"Microsoft HTTP.sys RCE (CVE-2021-31166) - Part 1"; flow:to_server,established; content:"Accept-Encoding|3a|"; nocase; pcre:"/Accept-Encoding\s*:\s*(?:[^\r\n]+).*?(gzip|deflate)(?:,[^\r\n]*)*\s*(,)/I");)
+alert tcp any any -> any any (msg:"Microsoft HTTP.sys RCE (CVE-2021-31166) - Part 2"; flow:to_server,established; content:"Accept-Encoding|3a|"; nocase; pcre:"/Accept-Encoding:[^\r\n]{0,80}(,\s*){5,}/I");)
+alert tcp any any -> any 445 (msg:"Microsoft SMBv3 SMBGhost RCE (CVE-2020-0796)"; flow:to_server,established; content:"|FC 53 4D 42|"; offset:0; depth:4; byte_test:4,>,0x10000000,4,relative,little;)
+
+# --- Infrastructure & Developer Ecosystem ---
+alert tcp any any -> any any (msg:"DoS Node.js TLS SNI Overload Attempt (CVE-2026-21637)"; flow:established,to_server; content:"|16 03|"; depth:2; content:"|01|"; distance:3; within:1; byte_test:2,>,50,3; content:"|00 00|"; fast_pattern; within:200; byte_jump:2,0,relative; byte_test:2,>,300,0,relative; content:"|00|"; distance:0; within:1; byte_test:2,>,255,0,relative; threshold:type both, track by_src, count 15, seconds 10;)
+alert tcp any any -> any any (msg:"EXPLOIT MS Office RCE (CVE-2026-26110)"; flow:established,to_server; content:"PK|03 04|"; depth:4; content:"word/_rels/document.xml.rels"; nocase; fast_pattern; content:"<Relationship"; nocase; content:"TargetMode=\x22External\x22"; nocase; pcre:"/Target=\x22(ms-msdt|file:\/\/\/|https?:\/\/)[^\x22]{1,512}/I"; threshold:type both, track by_src, count 3, seconds 10;)
+alert tcp any any -> any any (msg:"PackageKit InstallFiles Attempt 01 (CVE-2026-41651)"; content:"org.freedesktop.PackageKit.Modify"; nocase; content:"InstallFiles"; nocase; threshold:type both, track by_src, count 5, seconds 2;)
+alert tcp any any -> any any (msg:"PackageKit InstallFiles Attempt 02 (CVE-2026-41651)"; content:"InstallFiles"; nocase; pcre:"/Install(Files|Packages)/i"; threshold:type both, track by_src, count 3, seconds 5;)
+alert tcp any any -> any any (msg:"PackageKit InstallFiles Attempt 03 (CVE-2026-41651)"; flow:established,to_server; content:"InstallFiles"; fast_pattern; content:"PackageKit"; nocase;)
+alert tcp any any -> any any (msg:"free5GC UDR Fail-Open 01 (CVE-2026-40343)"; flow:established,to_server; content:"/nudr-dr/v2/policy-data/subs-to-notify"; fast_pattern; content:"Content-Length|3a| 0";)
+alert tcp any any -> any any (msg:"free5GC UDR Fail-Open 02 (CVE-2026-40343)"; flow:established,to_server; content:"/nudr-dr/v2/policy-data/subs-to-notify"; fast_pattern; content:"application/json"; pcre:"/\x7b(?:(?!\x7d).)+\x7d$/i");)
+alert tcp any any -> any any (msg:"Center_ActiveMQ Jolokia Exploit Attempt (CVE-2026-34197)"; flow:to_server,established; content:"/api/jolokia"; nocase; fast_pattern; content:"POST"; pcre:"/\btype\b\s*:\s*\bexec\b/Ui"; pcre:"/(bash|sh|cmd|powershell)/Ui");)
+alert tcp any any -> any any (msg:"LiteLLM Bearer SQL Injection Attempt (CVE-2026-42208) 01"; flow:established,to_server; content:"Authorization|3a| Bearer "; nocase; fast_pattern; pcre:"/Bearer\s+.*select\s+.*config_value.*from\s+.*litellm_config.*where\s+param_name\s*=\s*['\x22]environment_variables['\x22]/iH");)
+alert tcp any any -> any any (msg:"LiteLLM Bearer SQL Injection Attempt (CVE-2026-42208) 02"; flow:established,to_server; content:"Authorization|3a| Bearer "; nocase; fast_pattern; pcre:"/Bearer\s+.*(?:union\s+select|select\s+.*from\s+information_schema|pg_)/iH");)
+
+# --- Next-Gen Firewalls & Gateways (Palo Alto, Cisco, ipTIME, Open5GS) ---
+alert tcp any any -> any [443,80] (msg:"Palo Alto PAN-OS Authentication Bypass and RCE (CVE-2026-0300) 01"; flow:established,to_server; content:"/php/login.php"; content:"X-PAN-AUTHCHECK: off"; nocase;)
+alert tcp any any -> any [443,80] (msg:"Palo Alto PAN-OS Authentication Bypass and RCE (CVE-2026-0300) 02"; flow:established,to_server; content:"POST /php/login.php"; depth:30; content:"X-PAN-AUTHCHECK: off"; nocase; pcre:"/(cmd|command)=.*(base64|sh|curl|wget|python|perl)/i");)
+alert tcp any any -> any [443,80] (msg:"Palo Alto PAN-OS Buffer Overflow (CVE-2026-0300)"; flow:established,to_server; content:"X-PAN-AUTHCHECK:"; nocase; pcre:"/X-PAN-AUTHCHECK:[^\x0d\x0a]{500,}/i");)
+alert tcp any any -> any any (msg:"Cisco ISE privileged API access attempt (CVE-2026-20029)"; flow:to_server,established; content:"/identity/api/v1/"; fast_pattern; content:"/users"; distance:0; within:50; pcre:"/\bidentity\b\/api\/v1\/(config|internal)\/(users|endpoints)\b/Ui");)
+alert tcp any any -> any any (msg:"ipTIME CGI session bypass attempt (CVE-2026-24498)"; flow:to_server,established; content:"/cgi-bin/admin/session.cgi"; fast_pattern; pcre:"/\/cgi-bin\/admin\/session\.cgi(?:\?|&)(?:cmd|session)=/Ui");)
+alert tcp any any -> any any (msg:"Open5GS UDM smf-registrations malformed state manipulation (CVE-2026-7780)"; flow:to_server,established; content:"/smf-registrations"; nocase; content:"POST"; content:"Content-Type|3a| application/json"; nocase; pcre:"/(\x7b.*(\x22state\x22|\x22status\x22|\x22operation\x22).*\x3a\s*(null|\x22\x22|0x|NaN|undefined).*)/i");)
+alert tcp any any -> any any (msg:"Open5GS UDM authentication-subscription suspicious payload (CVE-2026-7779)"; flow:to_server,established; content:"/authentication-subscription"; nocase; content:"POST"; content:"Content-Type|3a| application/json"; nocase; pcre:"/(\x7b.*(\x22subscription\x22|\x22authentication\x22).*\x3a\s*(null|\x22\x22|undefined|NaN|0x).*)/i");)
