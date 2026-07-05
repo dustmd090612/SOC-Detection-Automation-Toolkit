@@ -1,6 +1,6 @@
 # 🛠️ SOC Detection & Automation Toolkit
 
-보안관제(SOC) 및 탐지 엔지니어링(Detection Engineering) 실무 환경에서 발생하는 단순 반복 작업을 줄이고, 최신 위협에 대응하기 위해 제작한 보안 자동화 및 시그니처 저장소입니다.
+보안관제(SOC) 및 탐지 엔지니어링(Detection Engineering) 실무 환경에서 발생하는 단순 반복 작업을 줄이고, 최신 고도화 위협에 실시간으로 대응하기 위해 제작한 보안 자동화 및 멀티 시그니처(Snort / YARA) 저장소입니다.
 
 ---
 
@@ -11,9 +11,11 @@
 │   ├── VirusTotal automation.py     # VT API 기반 IP 대량 분류 스크립트
 │   └── requirements.txt             # 의존성 라이브러리 목록
 │
-└── detection-rules/                 # 네트워크 위협 탐지 시그니처
-    └── snort/                       # Snort 룰 관리 폴더
-        └── critical_threats.rules   # 최신 취약점 및 인프라 방어 룰 (일괄 관리)
+└── detection-rules/                 # 위협 탐지 시그니처 통합 관리
+    ├── snort/                       # 네트워크 침입 탐지 시스템 (NIDS) 룰
+    │   └── critical_threats.rules   # 최신 취약점 및 Anubis C2 차단 시그니처
+    └── yara/                        # 엔드포인트 및 파일 정적 분석 룰
+        └── polinrider_campaign.yar  # 북한 APT 조직 유포 악성 패키지 탐지 시그니처
 
 
 1. 업무 자동화 도구 (Python Automation)
