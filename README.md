@@ -40,6 +40,11 @@ python automation/"VirusTotal automation.py"
 📍 호스트 기반 정적 분석 시그니처 (/detection-rules/yara)개발자 생태계 및 공급망 공격을 수행하는 APT 그룹의 고유한 파일 아티팩트 및 인코딩 패턴을 식별하여 악성 바이너리를 정적으로 탐지합니다.
 
 🎯 주요 탐지 커버리지 (Coverage)탐지 영역분류탐지 대상 및 주요 위협 정보 Snort
-최신 취약점 및 랜섬웨어CitrixBleed 2 Auth Bypass (CVE-2025-5777), Palo Alto PAN-OS Auth Bypass (CVE-2026-0300), Oracle OIM RCE (CVE-2026-21992), Langflow Unauthenticated RCE (CVE-2026-33017)Snort인텔리전스 기반 C2 차단Anubis (Sphinx) 랜섬웨어 공격 인프라 🛡️ (Remotely C2, MeshAgent C2, Typosquatted ScreenConnect Relay, MEGA S4 Exfiltration Path)Snort인프라 및 시스템 RCEApache log4j RCE, Microsoft HTTP.sys RCE (CVE-2021-31166), SMBGhost (CVE-2020-0796), Redis RCE (CVE-2022-0543)Snort엔터프라이즈 솔루션Cisco ISE (CVE-2026-20029), Confluence OGNL Injection (CVE-2023-22527), Citrix NetScaler RCE (CVE-2023-3519), ipTIME CGI Session Bypass (CVE-2026-24498)YARAAPT / 공급망 공격 ⚠️**북한 해커 조직 (Contagious Interview)**의 개발자 타깃 오픈소스 공급망 공격 (PolinRider 캠페인 악성 패키지 SHA-256 탐지)
+최신 취약점 및 랜섬웨어CitrixBleed 2 Auth Bypass (CVE-2025-5777), Palo Alto PAN-OS Auth Bypass (CVE-2026-0300), Oracle OIM RCE (CVE-2026-21992),
+Langflow Unauthenticated RCE (CVE-2026-33017)Snort인텔리전스 기반 C2 차단Anubis (Sphinx) 랜섬웨어 공격 인프라
+🛡️ (Remotely C2, MeshAgent C2, Typosquatted ScreenConnect Relay, MEGA S4 Exfiltration Path)Snort인프라 및 시스템 RCEApache log4j RCE, Microsoft HTTP.sys RCE (CVE-2021-31166),
+SMBGhost (CVE-2020-0796), Redis RCE (CVE-2022-0543)Snort엔터프라이즈 솔루션Cisco ISE (CVE-2026-20029), Confluence OGNL Injection (CVE-2023-22527),
+Citrix NetScaler RCE (CVE-2023-3519), ipTIME CGI Session Bypass (CVE-2026-24498)YARAAPT / 공급망 공격
+⚠️**북한 해커 조직 (Contagious Interview)**의 개발자 타깃 오픈소스 공급망 공격 (PolinRider 캠페인 악성 패키지 SHA-256 탐지)
 
 
