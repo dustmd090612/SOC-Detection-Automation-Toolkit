@@ -69,3 +69,19 @@ alert tcp any any -> any any (msg:"Cisco ISE privileged API access attempt (CVE-
 alert tcp any any -> any any (msg:"ipTIME CGI session bypass attempt (CVE-2026-24498)"; flow:to_server,established; content:"/cgi-bin/admin/session.cgi"; fast_pattern; pcre:"/\/cgi-bin\/admin\/session\.cgi(?:\?|&)(?:cmd|session)=/Ui");)
 alert tcp any any -> any any (msg:"Open5GS UDM smf-registrations malformed state manipulation (CVE-2026-7780)"; flow:to_server,established; content:"/smf-registrations"; nocase; content:"POST"; content:"Content-Type|3a| application/json"; nocase; pcre:"/(\x7b.*(\x22state\x22|\x22status\x22|\x22operation\x22).*\x3a\s*(null|\x22\x22|0x|NaN|undefined).*)/i");)
 alert tcp any any -> any any (msg:"Open5GS UDM authentication-subscription suspicious payload (CVE-2026-7779)"; flow:to_server,established; content:"/authentication-subscription"; nocase; content:"POST"; content:"Content-Type|3a| application/json"; nocase; pcre:"/(\x7b.*(\x22subscription\x22|\x22authentication\x22).*\x3a\s*(null|\x22\x22|undefined|NaN|0x).*)/i");)
+
+# --- Anubis Ransomware Campaign Indicators of Compromise (IoCs) ---
+# Anubis 캠페인 내 악성 원격 데스크톱(Remotely) C2 아웃바운드 통신 탐지
+alert tcp any any -> [45.76.79.92] any (msg:"MALWARE-CNC Anubis Campaign Remotely Desktop C2 Outbound"; flow:to_server,established; classtype:trojan-activity; sid:1000046; rev:1;)
+
+# Anubis 캠페인 내 MeshAgent C2 인프라 통신 탐지
+alert tcp any any -> [45.13.212.7,144.202.14.75] any (msg:"MALWARE-CNC Anubis Campaign MeshAgent C2 Outbound"; flow:to_server,established; classtype:trojan-activity; sid:1000047; rev:1;)
+
+# Anubis 캠페인 내 타이포스쿼팅된 ScreenConnect 공격 인프라 IP 탐지
+alert tcp any any -> [83.143.112.178] any (msg:"MALWARE-CNC Anubis Campaign Typosquatted ScreenConnect IP Outbound"; flow:to_server,established; classtype:trojan-activity; sid:1000048; rev:1;)
+
+# Anubis 캠페인 내 타이포스쿼팅된 ScreenConnect Relay 도메인 통신 탐지
+alert tcp any any -> any $HTTP_PORTS (msg:"MALWARE-CNC Anubis Campaign Typosquatted ScreenConnect Relay Domain"; flow:to_server,established; http_header; content:"Host: relay.promotds.us"; nocase; classtype:trojan-activity; sid:1000049; rev:1;)
+
+# Anubis 공격자가 데이터 유출(Exfiltration) 통로로 악용한 MEGA S4 스토리지 통신 탐지
+alert tcp any any -> any $HTTP_PORTS (msg:"MALWARE-CNC Anubis Campaign Data Exfiltration to MEGA S4 Storage"; flow:to_server,established; http_header; content:"Host: s3.eu-amsterdam.megas4.com"; nocase; classtype:trojan-activity; sid:1000050; rev:1;)
