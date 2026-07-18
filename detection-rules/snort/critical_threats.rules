@@ -72,16 +72,19 @@ alert tcp any any -> any any (msg:"Open5GS UDM authentication-subscription suspi
 
 # --- Anubis Ransomware Campaign Indicators of Compromise (IoCs) ---
 # Anubis 캠페인 내 악성 원격 데스크톱(Remotely) C2 아웃바운드 통신 탐지
-alert tcp any any -> [45.76.79.92] any (msg:"MALWARE-CNC Anubis Campaign Remotely Desktop C2 Outbound"; flow:to_server,established; classtype:trojan-activity; sid:1000046; rev:1;)
+alert tcp any any -> [45.76.79.92] any (msg:"MALWARE-CNC Anubis Campaign Remotely Desktop C2 Outbound"; flow:to_server,established; classtype:trojan-activity;)
 
 # Anubis 캠페인 내 MeshAgent C2 인프라 통신 탐지
-alert tcp any any -> [45.13.212.7,144.202.14.75] any (msg:"MALWARE-CNC Anubis Campaign MeshAgent C2 Outbound"; flow:to_server,established; classtype:trojan-activity; sid:1000047; rev:1;)
+alert tcp any any -> [45.13.212.7,144.202.14.75] any (msg:"MALWARE-CNC Anubis Campaign MeshAgent C2 Outbound"; flow:to_server,established; classtype:trojan-activity;)
 
 # Anubis 캠페인 내 타이포스쿼팅된 ScreenConnect 공격 인프라 IP 탐지
-alert tcp any any -> [83.143.112.178] any (msg:"MALWARE-CNC Anubis Campaign Typosquatted ScreenConnect IP Outbound"; flow:to_server,established; classtype:trojan-activity; sid:1000048; rev:1;)
+alert tcp any any -> [83.143.112.178] any (msg:"MALWARE-CNC Anubis Campaign Typosquatted ScreenConnect IP Outbound"; flow:to_server,established; classtype:trojan-activity;)
 
 # Anubis 캠페인 내 타이포스쿼팅된 ScreenConnect Relay 도메인 통신 탐지
-alert tcp any any -> any $HTTP_PORTS (msg:"MALWARE-CNC Anubis Campaign Typosquatted ScreenConnect Relay Domain"; flow:to_server,established; http_header; content:"Host: relay.promotds.us"; nocase; classtype:trojan-activity; sid:1000049; rev:1;)
+alert tcp any any -> any $HTTP_PORTS (msg:"MALWARE-CNC Anubis Campaign Typosquatted ScreenConnect Relay Domain"; flow:to_server,established; http_header; content:"Host: relay.promotds.us"; nocase; classtype:trojan-activity;)
 
 # Anubis 공격자가 데이터 유출(Exfiltration) 통로로 악용한 MEGA S4 스토리지 통신 탐지
-alert tcp any any -> any $HTTP_PORTS (msg:"MALWARE-CNC Anubis Campaign Data Exfiltration to MEGA S4 Storage"; flow:to_server,established; http_header; content:"Host: s3.eu-amsterdam.megas4.com"; nocase; classtype:trojan-activity; sid:1000050; rev:1;)
+alert tcp any any -> any $HTTP_PORTS (msg:"MALWARE-CNC Anubis Campaign Data Exfiltration to MEGA S4 Storage"; flow:to_server,established; http_header; content:"Host: s3.eu-amsterdam.megas4.com"; nocase; classtype:trojan-activity;)
+
+# [2026-07-18] LabubaRAT C2 Infrastructure Detection
+alert tcp $EXTERNAL_NET $HTTP_PORTS -> $HOME_NET any (msg:"MALWARE-CNC Rust.LabubaRAT C2 Panel Response"; flow:established,from_server; file_data; content:"LabubaPanel"; nocase; metadata:impact_high, confidence_high;)
