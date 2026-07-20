@@ -17,6 +17,7 @@
     └── yara/                        # 엔드포인트 및 파일 정적 분석 룰
         └── polinrider_campaign.yar  # 북한 APT 조직 유포 악성 패키지 탐지 시그니처
         └── labuba_rat.yar           # 엔비디아 위장 신종 라부바RAT 탐지 룰
+        └── kaizen_botnet.yar        # ARM 기반 Kaizen 봇넷 바이너리 탐지 룰
 
 
 1. 업무 자동화 도구 (Python Automation)
@@ -44,11 +45,13 @@ python automation/"VirusTotal automation.py"
 🎯 주요 탐지 커버리지 (Coverage)
 
 Snort
-최신 취약점 및 랜섬웨어	CitrixBleed 2 Auth Bypass (CVE-2025-5777), Palo Alto PAN-OS Auth Bypass (CVE-2026-0300), Oracle OIM RCE (CVE-2026-21992), Langflow Unauthenticated RCE (CVE-2026-33017)
-인텔리전스 기반 C2 차단	Anubis (Sphinx) 랜섬웨어 공격 인프라 (Remotely C2, MeshAgent C2, Typosquatted ScreenConnect Relay, MEGA S4 Exfiltration Path), 신종 라부바RAT (LabubaRAT) C2 패널 통신 탐지
-인프라 및 시스템 RCE	Apache log4j RCE, Microsoft HTTP.sys RCE (CVE-2021-31166), SMBGhost (CVE-2020-0796), Redis RCE (CVE-2022-0543)
-엔터프라이즈 솔루션	Cisco ISE (CVE-2026-20029), Confluence OGNL Injection (CVE-2023-22527), Citrix NetScaler RCE (CVE-2023-3519), ipTIME CGI Session Bypass (CVE-2026-24498)
+웹 공격 & Command Injection | OS Command Injection 기반 봇넷 드로퍼 다운로드 시도 탐지 (wget, chmod), 도발형 악성 스캐너 User-Agent 탐지 (r00ts3c)
+최신 취약점 및 랜섬웨어 | CitrixBleed 2 Auth Bypass (CVE-2025-5777), Palo Alto PAN-OS Auth Bypass (CVE-2026-0300), Oracle OIM RCE (CVE-2026-21992), Langflow Unauthenticated RCE (CVE-2026-33017)
+인텔리전스 기반 C2 차단 | Anubis (Sphinx) 랜섬웨어 공격 인프라 (Remotely C2, MeshAgent C2, Typosquatted ScreenConnect Relay, MEGA S4 Exfiltration Path), 신종 라부바RAT (LabubaRAT) C2 패널 통신 탐지
+인프라 및 시스템 RCE	| Apache log4j RCE, Microsoft HTTP.sys RCE (CVE-2021-31166), SMBGhost (CVE-2020-0796), Redis RCE (CVE-2022-0543)
+엔터프라이즈 솔루션	| Cisco ISE (CVE-2026-20029), Confluence OGNL Injection (CVE-2023-22527), Citrix NetScaler RCE (CVE-2023-3519), ipTIME CGI Session Bypass (CVE-2026-24498)
 
 YARA
+IoT / 봇넷 악성코드      **ARMv7 기반 IoT / 임베디드 타깃 Kaizen 봇넷 바이너리 정적 탐지
 APT / 공급망 공격     	**북한 해커 조직 (Contagious Interview)**의 개발자 타깃 오픈소스 공급망 공격 (PolinRider 캠페인 악성 패키지 SHA-256 탐지)
 신종 원격 제어(RAT)      **엔비디아(NVIDIA) 컨테이너 툴킷 위장 Rust 기반 원격 제어 악성코드  (LabubaRAT 호스트 프로파일링 및 내부 SQLite 로직 정적 탐지) 
