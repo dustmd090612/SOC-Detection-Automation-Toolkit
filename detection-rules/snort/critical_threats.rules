@@ -92,7 +92,7 @@ alert tcp $EXTERNAL_NET $HTTP_PORTS -> $HOME_NET any (msg:"MALWARE-CNC Rust.Labu
 # [2026-07-20] OS Command Injection & Kaizen Botnet Detection
 # -----------------------------------------------------------------------
 # 1. URI 내 OS Command Injection 연속 구문 탐지 (wget + chmod + 실행)
-alert tcp $EXTERNAL_NET any -> $HTTP_SERVERS$HTTP_PORTS (msg:"EXPLOIT-KIT OS Command Injection Attempt (Kaizen Botnet Dropper)"; flow:to_server,established; content:"/tmp"; http_uri; content:"wget"; http_uri; content:"chmod"; http_uri; metadata:impact_high, confidence_high; sid:1000004; rev:1;)
+alert tcp $EXTERNAL_NET any -> $HTTP_SERVERS$HTTP_PORTS (msg:"EXPLOIT-KIT OS Command Injection Attempt (Kaizen Botnet Dropper)"; flow:to_server,established; content:"/tmp"; http_uri; content:"wget"; http_uri; content:"chmod"; http_uri; metadata:impact_high, confidence_high;)
 
 # 2. 도발형 공격자 스캐너 User-Agent 탐지
-alert tcp $EXTERNAL_NET any -> $HTTP_SERVERS$HTTP_PORTS (msg:"SUSPICIOUS Malicious User-Agent r00ts3c Scanner Detected"; flow:to_server,established; content:"r00ts3c"; http_header; metadata:impact_medium, confidence_high; sid:1000005; rev:1;)
+alert tcp $EXTERNAL_NET any -> $HTTP_SERVERS$HTTP_PORTS (msg:"SUSPICIOUS Malicious User-Agent r00ts3c Scanner Detected"; flow:to_server,established; content:"r00ts3c"; http_header; metadata:impact_medium, confidence_high;)
