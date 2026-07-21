@@ -18,6 +18,7 @@
         └── polinrider_campaign.yar  # 북한 APT 조직 유포 악성 패키지 탐지 시그니처
         └── labuba_rat.yar           # 엔비디아 위장 신종 라부바RAT 탐지 룰
         └── kaizen_botnet.yar        # ARM 기반 Kaizen 봇넷 바이너리 탐지 룰
+        └── nadmesh_botnet.yar       # AI & MCP 인프라 표적 NadMesh Go 봇넷 탐지 룰
 
 
 1. 업무 자동화 도구 (Python Automation)
