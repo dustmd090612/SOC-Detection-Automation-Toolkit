@@ -1,0 +1,55 @@
+
+# PHP2Shell Detection Rules
+# Target engine: Snort 2.x syntax (experimental)
+# CVE-2026-109618 / CVE-2026-109619
+#
+# 1000101-1000110: Reconstructed heuristic drafts
+# 1000111: Adapted from reference PDF rule #2
+# 1000112-1000113: CYFIRMA intelligence-derived candidates
+#
+# NOT production-validated.
+# Use in an isolated IDS test environment before IPS deployment.
+
+# 01. Chunked multipart POST without Content-Length
+# Note: This is valid HTTP behavior and may generate false positives.
+alert tcp $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL PHP2Shell EXPERIMENTAL chunked multipart POST without Content-Length"; flow:to_server,established; content:"POST"; http_method; content:"multipart/form-data"; nocase; http_header; content:"Transfer-Encoding|3A|"; nocase; http_header; content:"chunked"; nocase; http_header; content:!"Content-Length|3A|"; nocase; http_header; sid:1000101; rev:2;)
+
+# 02. Oversized multipart part header
+alert tcp $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL PHP2Shell EXPERIMENTAL oversized multipart part header"; flow:to_server,established; content:"multipart/form-data"; nocase; http_header; pcre:"/Content-Disposition\s*:[^\r\n]{2048,}/iP"; sid:1000102; rev:2;)
+
+# 03. Multipart header-run amplification heuristic
+alert tcp $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL PHP2Shell EXPERIMENTAL multipart header-run amplification"; flow:to_server,established; content:"multipart/form-data"; nocase; http_header; pcre:"/(?:\r\n[A-Za-z][A-Za-z0-9-]{0,39}:[^\r\n]{0,256}){24,}/P"; sid:1000103; rev:2;)
+
+# 04. Deeply nested multipart field names
+alert tcp $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL PHP2Shell EXPERIMENTAL deeply nested multipart names"; flow:to_server,established; content:"name="; nocase; http_client_body; pcre:"/name\s*=\s*\x22[A-Za-z0-9_]{1,64}(?:\[[A-Za-z0-9_]{0,32}\]){8,}\x22/iP"; sid:1000104; rev:2;)
+
+# 05. Multiple empty-filename controls in one body
+alert tcp $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL PHP2Shell EXPERIMENTAL empty filename repetition"; flow:to_server,established; content:"filename=|22 22|"; nocase; http_client_body; pcre:"/(?:filename\s*=\s*\x22\x22[\s\S]{0,512}){8,}/iP"; sid:1000105; rev:2;)
+
+# 06. Multipart part flood heuristic
+alert tcp $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL PHP2Shell EXPERIMENTAL multipart part flood"; flow:to_server,established; content:"multipart/form-data"; nocase; http_header; pcre:"/(?:Content-Disposition\s*:\s*form-data[\s\S]{0,1024}){24,}/iP"; sid:1000106; rev:2;)
+
+# 07. Oversized multipart filename
+alert tcp $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL PHP2Shell EXPERIMENTAL oversized multipart filename"; flow:to_server,established; content:"filename="; nocase; http_client_body; pcre:"/filename\s*=\s*\x22[^\r\n\x22]{2048,}\x22/iP"; sid:1000107; rev:2;)
+
+# 08. Upload-progress marker with suspicious PHP syntax
+# Note: Both indicators may occur in separate fields.
+alert tcp $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL PHP2Shell EXPERIMENTAL upload progress and suspicious PHP syntax"; flow:to_server,established; content:"PHP_SESSION_UPLOAD_PROGRESS"; nocase; http_client_body; pcre:"/(?:<\?php|<\?=|php:\/\/|(?:system|shell_exec|passthru|eval)\s*\()/iP"; sid:1000108; rev:2;)
+
+# 09. Suspicious payload in multipart filename
+alert tcp $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL PHP2Shell EXPERIMENTAL suspicious multipart filename"; flow:to_server,established; content:"filename="; nocase; http_client_body; pcre:"/filename\s*=\s*\x22[^\r\n\x22]{0,256}(?:<\?php|<\?=|php:\/\/|%3c%3fphp|\.\.\/)/iP"; sid:1000109; rev:2;)
+
+# 10. PHPSESSID supplied as a multipart form field
+alert tcp $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL PHP2Shell EXPERIMENTAL PHPSESSID multipart field"; flow:to_server,established; content:"name=|22|PHPSESSID|22|"; nocase; http_client_body; sid:1000110; rev:2;)
+
+# 11. Existing reference-PDF User-Agent signature
+# Local SID assigned; original source attribution must be retained.
+alert tcp any any -> any any (msg:"LOCAL PHP2Shell reference UA php2shell"; flow:to_server,established; content:"POST "; depth:5; nocase; content:"|0D 0A|User-Agent|3A| php2shell"; fast_pattern; nocase; sid:1000111; rev:2;)
+
+# 12. CYFIRMA: php2shell-scan User-Agent / tool string
+# Tool string is spoofable and is not proof of exploitation.
+alert tcp $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL PHP2Shell CYFIRMA php2shell-scan tool marker"; flow:to_server,established; content:"POST"; http_method; content:"php2shell-scan"; nocase; http_header; sid:1000112; rev:1;)
+
+# 13. CYFIRMA: JACKALPOC request marker
+# Investigate as a tool/PoC indicator, not as confirmed RCE.
+alert tcp $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"LOCAL PHP2Shell CYFIRMA JACKALPOC marker"; flow:to_server,established; content:"POST"; http_method; content:"JACKALPOC"; nocase; http_client_body; sid:1000113; rev:1;)
